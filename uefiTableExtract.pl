@@ -1,52 +1,224 @@
 #!/usr/bin/perl -w
 
 #
-# ACPI-extract.pl (version 0.5) is a Perl script to extract DSDT and SSDT tables from ROM modules.
+# uefiTableExtract.pl (version 1.0) is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
-# Version 0.5 - Copyright (c) 2011-2012 by † RevoGirl
-# Version 1.2 - Copyright (c) 2013-2014 by Pike R. Alpha <PikeRAlpha@yahoo.com>
 #
-# The binary files (.aml) will be saved in the AML sub-directory of the current working directory. 
+# Version 1.0 - Copyright (c) 2013-2014 by uglyJoe
+#               based on:
+#               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
+#
+#
+# UEFIExtract is called to extract the binary files from the bios file.
+#
+# The binary files (.aml) will be saved in the AML sub-directory of the current bios directory.
 # The IASL compiled/decompiler is called to decompile the files after the AML files are saved.
 # Decompiled files will be stored in the DSL directory of the current working directory.
-# Now you can change the file(s) you need/want to fix/change.
-# Use IASL (or iaslMe) to compile the modified file(s) to check for errors and warnings. 
+# If this fails with: 'Namespace lookup failure, AE_ALREADY_EXISTS', look at the output for
+# the last table which makes the trouble and try something like this in Terminal:
+# cd AML
+# mv SSDT-trouble.aml SSDT-trouble.bin && iasl -d SSDT-trouble.bin
+# iasl -da DSDT.aml SSDT*.aml
 #
-# The next step is to use ACPI-inject.pl (to be developed) to inject the modified file(s).
-# Then all you need to do is to repack the BIOS and flash it with the tool of your choice.
+#
+# Use MaciASL to fix/change/patch the dsl file(s).
+# Use IASL (or MaciASL) to compile the modified file(s) to check for errors and warnings.
+#
+# Use Dsdt2Bios to compress DSDT.aml into AmiBoardInfo.bin (original is saved in the AML sub-directory).
+# Use UEFITool to put AmiBoardInfo.bin and SSDT-*.aml back into bios.
 #
 # Note: The extracted tables are not initialized by the BIOS when we extract them, and thus 
 #       they <em>cannot</em> be used as ordinary DSDT and/or SSDT to boot OS X, or any other OS.
 #       The reason for this is that certain variables (memory addresses) are not filled in.
 #
 #
-# Usage: [sudo] ./acpiTableExtract.pl
+# Usage: ./uefiTableExtract.pl /path/to/bios.rom
 #
 # Updates:
-#			- v1.2  Renamed script from acpi-extract.pl to acpiTableExtract.pl (Pike, September 2014)
-#			-       Signature check expanded, now matches a lot more tables.
-#			-       Pushed script to its own Github repository (making it easier to find).
+#			- v1.0  Renamed script from acpiTableExtract.pl to uefiTableExtract.pl
+#			-       Changed script to work with UEFIExtract.
+#			-       ...
 #
 
+use strict;
+use warnings;
+
+use Cwd;
+use File::Basename;
+use File::Find;
+use File::Copy 'move';
+use File::Which;
+#use File::Spec;
+
+
 #
-# Path to IASL.
+# Defaults
 #
-$iasl = "/usr/local/bin/iasl";
-                                
+my $pwd = cwd();
+my $amlDir = "$pwd/AML";
+my $dslDir = "$pwd/DSL";
+my $enable_extract = 0;
+my $enable_decompile = 0;
+
+
+#
+# Tools
+#
+my $IASL = which( "iasl" );
+if (! -x $IASL)
+{
+    $IASL = "./iasl";
+    if (! -x $IASL)
+    {
+        print "ERROR - iasl not found\n";
+        $enable_decompile = 0;
+    }
+}
+
+my $UEFIExtract = which( "UEFIExtract" );
+if (! -x $UEFIExtract)
+{
+    $UEFIExtract = "./UEFIExtract";
+    if (! -x $UEFIExtract)
+    {
+        print "ERROR - UEFIExtract not found\n";
+        $enable_extract = 0;
+    }
+}
+
+
+#
+# UEFIExtract: Extract BIN files from bios
+#
+sub extract()
+{
+    my ($in) = @_;
+    if ($enable_extract == 1)
+    {
+        printf("\nExtracting files to: %s.dump \n", $in);
+        `$UEFIExtract "$in"`
+    }
+}
+
+#
+# IASL: Disassemble AML files
+#
+sub aml2dsl()
+{
+    our ($in, $out) = @_;
+    if (($enable_decompile == 1) && (-d $in))
+    {
+        if (! -d $out)
+        {
+            `mkdir "$out"`
+        }
+        
+        chdir($in);
+        printf("\nDecompiling (iasl) Acpi tables to: %s \n\n", $out);
+        move("SSDT-IdeTable.aml", "SSDT-IdeTable.bin") && `$IASL -p "$out/SSDT-IdeTable.dsl" -d SSDT-IdeTable.bin`; # quick and dirty fix
+        find(\&handle_file, $in);
+    }
+
+    sub handle_file
+	{
+        my $targetFile = $_;
+        my ($ext) = $targetFile =~ /(\.[^.]+)$/;
+        if ($ext && "$ext" eq ".aml")
+        {
+            printf("\nDisassembling %s \n", $targetFile);
+            `$IASL -p "$out/$targetFile" -e DSDT.aml SSDT*.aml -d "$targetFile"`;
+        }
+    }
+}
+
+#
+# BIN to AML
+#
 sub main()
 {
-	my $checkedFiles = 0;
-	my $skippedFiles = 0;
-	my $skippedPaddingFiles = 0;
-	
-	my @romFiles = glob ("*.ROM");
+    print "\nuefiTableExtract.pl 1.0\n";
+    print "\n";
+    print "\n";
+    
+    my $rom = "";
+	our $checkedFiles = 0;
+	our $skippedFiles = 0;
+	our $skippedPaddingFiles = 0;
+    
+    # Commandline arguments
+    my $numArgs = $#ARGV + 1;
+    if ($numArgs eq 1)
+    {
+        if (-d $ARGV[0])
+        {
+            $pwd = $ARGV[0];
+            printf("Found dir: %s \n", $pwd);
+        }
+        
+        elsif (-f $ARGV[0])
+        {
+            #$rom = File::Spec->rel2abs($ARGV[0]);
+            $rom = $ARGV[0];
+            printf("Found file: %s \n", $rom);
+            $pwd = dirname($rom);
+            chdir($pwd);
+            $pwd = cwd();
+            $enable_extract = 1;
+        }
+        else
+        {
+            printf("File or directory not found: %s \n", $ARGV[0]);
+            exit(1);
+        }
+    }
+    else
+    {
+        print "Path to ROM file?\n";
+        $rom = <>;
+        chomp $rom;
+        $rom =~ s/^\s+|\\|\s+$//g;
+        
+        if (-f $rom)
+        {
+            printf("Found file: %s \n", $rom);
+            $pwd = dirname($rom);
+            chdir($pwd);
+            $pwd = cwd();
+            $enable_extract = 1;
+        }
+        else
+        {
+            printf("File not found: %s \n", $rom);
+            exit(1);
+        }
+    }
+    
+    printf("Default path: %s \n", $pwd);
+    chdir($pwd);
+    $amlDir = "$pwd/AML";
+    $dslDir = "$pwd/DSL";
+    
+    my $dump = $pwd;
+    if ($rom ne "")
+    {
+    	&extract($rom);
+        $dump = "$rom.dump";
+    }
+    
+    if (-d $dump)
+    {
+        print "Searching binary files ...\n";
+        find(\&revo_file, $dump);
+    }
 
-	foreach my $filename (@romFiles)
+    sub revo_file
 	{
+        my $filename = $_;
+        
 		$checkedFiles++;
 
 		# The ACPI header is 36 bytes (skipping anything smaller).
-		if ( ((-s $filename) > 36) && (substr($filename, 0, 7) ne "PADDING") )
+		if ( ((-s $filename) > 36) && (substr($filename, 0, 7) ne "PADDING") && ($filename eq "body.bin") )
 		{
 			if (open(FILE, $filename))
 			{
@@ -159,13 +331,13 @@ sub main()
 
 								if (($bytesRead = read(FILE, $data, $length)) > 0)
 								{
-									if (! -d "AML")
+									if (! -d $amlDir)
 									{
-										`mkdir AML`
+										`mkdir "$amlDir"`
 									}
 
-									printf("Saving raw Acpi table data to: AML/$targetFile\n");
-									open(OUT, ">AML/$targetFile") || die $!;
+									printf("Saving raw Acpi table data to: $amlDir/$targetFile\n");
+									open(OUT, ">$amlDir/$targetFile") || die $!;
 									binmode OUT;
 									
 									# Uninitialized Acpi table data requires some patching
@@ -186,15 +358,12 @@ sub main()
 
 									print OUT $data;
 									close(OUT);
-
-									if (! -d "DSL")
-									{
-										`mkdir DSL`
-									}
-
-									printf("Decompiling (iasl) Acpi table to: DSL/$targetFile\n");
-
-									`$iasl -p DSL/$targetFile -d AML/$targetFile -e DSL/DSDT.aml,DSL/SSDT*.aml`
+                                    
+                                    $enable_decompile = 1;
+                                    if ($signature eq "DSDT")
+                                    {
+                                        `cp "$filename" "$amlDir/AmiBoardInfo.bin"`;
+                                    }
 								}
 							}
 
@@ -228,8 +397,11 @@ sub main()
 	}
 	else
 	{
-		print "Error: No .ROM files found!\n";
+		print "Error: No .bin files found!\n";
+        $enable_decompile = 0;
 	}
+    
+    &aml2dsl($amlDir, $dslDir);
 }
 
 main();
