@@ -119,7 +119,7 @@ sub aml2dsl()
     }
 
     sub handle_file
-	{
+    {
         my $targetFile = $_;
         my ($ext) = $targetFile =~ /(\.[^.]+)$/;
         if ($ext && "$ext" eq ".aml")
@@ -211,7 +211,7 @@ sub main()
     }
 
     sub revo_file
-	{
+    {
 		my $filename = $_;
         
 		$checkedFiles++;
