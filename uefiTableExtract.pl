@@ -12,7 +12,7 @@
 # UEFIExtract is called to extract the binary files from the bios file.
 #
 # The binary files (.aml) will be saved in the AML sub-directory of the current bios directory.
-# The IASL compiled/decompiler is called to decompile the files after the AML files are saved.
+# The IASL compiler/decompiler is called to decompile the files after the AML files are saved.
 # Decompiled files will be stored in the DSL directory of the current working directory.
 # If this fails with: 'Namespace lookup failure, AE_ALREADY_EXISTS', look at the output for
 # the last table which makes the trouble and try something like this in Terminal:
@@ -48,7 +48,6 @@ use File::Basename;
 use File::Find;
 use File::Copy 'move';
 use File::Which;
-#use File::Spec;
 
 
 #
@@ -141,9 +140,9 @@ sub main()
     print "\n";
     
     my $rom = "";
-	our $checkedFiles = 0;
-	our $skippedFiles = 0;
-	our $skippedPaddingFiles = 0;
+    our $checkedFiles = 0;
+    our $skippedFiles = 0;
+    our $skippedPaddingFiles = 0;
     
     # Commandline arguments
     my $numArgs = $#ARGV + 1;
@@ -213,7 +212,7 @@ sub main()
 
     sub revo_file
 	{
-        my $filename = $_;
+		my $filename = $_;
         
 		$checkedFiles++;
 
@@ -359,11 +358,11 @@ sub main()
 									print OUT $data;
 									close(OUT);
                                     
-                                    $enable_decompile = 1;
-                                    if ($signature eq "DSDT")
-                                    {
-                                        `cp "$filename" "$amlDir/AmiBoardInfo.bin"`;
-                                    }
+									$enable_decompile = 1;
+									if ($signature eq "DSDT")
+									{
+										`cp "$filename" "$amlDir/AmiBoardInfo.bin"`;
+									}
 								}
 							}
 
@@ -398,10 +397,10 @@ sub main()
 	else
 	{
 		print "Error: No .bin files found!\n";
-        $enable_decompile = 0;
+		$enable_decompile = 0;
 	}
     
-    &aml2dsl($amlDir, $dslDir);
+	&aml2dsl($amlDir, $dslDir);
 }
 
 main();
