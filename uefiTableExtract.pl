@@ -213,11 +213,13 @@ sub main()
     sub revo_file
     {
 		my $filename = $_;
+		my $filepath = $File::Find::name;
         
 		$checkedFiles++;
 
 		# The ACPI header is 36 bytes (skipping anything smaller).
-		if ( ((-s $filename) > 36) && (substr($filename, 0, 7) ne "PADDING") && ($filename eq "body.bin") )
+		if ( ((-s $filename) > 36) && (substr($filename, 0, 7) ne "PADDING") && ($filename eq "body.bin")
+		      && ((grep(/\sRaw\s/, $filepath)) || (grep(/\sPE32\W\s/, $filepath))) )
 		{
 			if (open(FILE, $filename))
 			{
@@ -363,6 +365,9 @@ sub main()
 									{
 										`cp "$filename" "$amlDir/AmiBoardInfo.bin"`;
 									}
+                                    
+									$filepath =~ s/$pwd/./g;
+									`echo "$targetFile\n$filepath" >> "$amlDir/filelist.txt"`;
 								}
 							}
 
