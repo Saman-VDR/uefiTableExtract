@@ -4,7 +4,7 @@
 # uefiTableExtract.pl (version 1.0) is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-# Version 1.0 - Copyright (c) 2013-2014 by uglyJoe
+# Version 1.1 - Copyright (c) 2013-2014 by uglyJoe
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -13,7 +13,7 @@
 #
 # The binary files (.aml) will be saved in the AML sub-directory of the current bios directory.
 # The IASL compiler/decompiler is called to decompile the files after the AML files are saved.
-# Decompiled files will be stored in the DSL directory of the current working directory.
+# Decompiled files will be stored in the DSL directory of the current bios directory.
 # If this fails with: 'Namespace lookup failure, AE_ALREADY_EXISTS', look at the output for
 # the last table which makes the trouble and try something like this in Terminal:
 # cd AML
@@ -38,6 +38,8 @@
 #			- v1.0  Renamed script from acpiTableExtract.pl to uefiTableExtract.pl
 #			-       Changed script to work with UEFIExtract.
 #			-       ...
+#			- v1.1  Fixed bug if tools not found in PATH
+#                       -       Changed default path for iasl and UEFIExtract
 #
 
 use strict;
@@ -63,28 +65,31 @@ my $enable_decompile = 0;
 #
 # Tools
 #
-my $IASL = which( "iasl" );
-if (! -x $IASL)
+my $IASL = "./iasl";
+my $UEFIExtract = "./UEFIExtract";
+
+sub tools()
 {
-    $IASL = "./iasl";
     if (! -x $IASL)
     {
-        print "ERROR - iasl not found\n";
-        $enable_decompile = 0;
+        $IASL = which( "iasl" );
+        if (! $IASL || ! -x $IASL)
+        {
+            print "ERROR - iasl not found\n";
+            $enable_decompile = -1;
+        }
     }
-}
 
-my $UEFIExtract = which( "UEFIExtract" );
-if (! -x $UEFIExtract)
-{
-    $UEFIExtract = "./UEFIExtract";
     if (! -x $UEFIExtract)
     {
-        print "ERROR - UEFIExtract not found\n";
-        $enable_extract = 0;
+        $UEFIExtract = which( "UEFIExtract" );
+        if (! $UEFIExtract || ! -x $UEFIExtract)
+        {
+            print "ERROR - UEFIExtract not found\n";
+            $enable_extract = -1;
+        }
     }
 }
-
 
 #
 # UEFIExtract: Extract BIN files from bios
@@ -144,6 +149,9 @@ sub main()
     our $skippedFiles = 0;
     our $skippedPaddingFiles = 0;
     
+    # Check tools
+    tools();
+    
     # Commandline arguments
     my $numArgs = $#ARGV + 1;
     if ($numArgs eq 1)
@@ -153,8 +161,7 @@ sub main()
             $pwd = $ARGV[0];
             printf("Found dir: %s \n", $pwd);
         }
-        
-        elsif (-f $ARGV[0])
+        elsif ((-f $ARGV[0]) && ($enable_extract >= 0))
         {
             #$rom = File::Spec->rel2abs($ARGV[0]);
             $rom = $ARGV[0];
@@ -166,7 +173,10 @@ sub main()
         }
         else
         {
-            printf("File or directory not found: %s \n", $ARGV[0]);
+            if ($enable_extract >= 0)
+            {
+                printf("File or directory not found: %s \n", $ARGV[0]);
+            }
             exit(1);
         }
     }
@@ -177,7 +187,7 @@ sub main()
         chomp $rom;
         $rom =~ s/^\s+|\\|\s+$//g;
         
-        if (-f $rom)
+        if ((-f $rom) && ($enable_extract >= 0))
         {
             printf("Found file: %s \n", $rom);
             $pwd = dirname($rom);
