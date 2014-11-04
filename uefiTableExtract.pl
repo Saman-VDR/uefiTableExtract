@@ -184,7 +184,7 @@ sub aml2dsl()
 #
 sub main()
 {
-    print "\nuefiTableExtract.pl 1.0\n";
+    print "\nuefiTableExtract.pl 1.2\n";
     print "\n";
     print "\n";
     
