@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
 #
-# uefiTableExtract.pl (version 1.0) is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
+# uefiTableExtract.pl is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-# Version 1.1 - Copyright (c) 2013-2014 by uglyJoe
+# Version 1.2 - Copyright (c) 2013-2014 by uglyJoe
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -114,12 +114,55 @@ sub aml2dsl()
     {
         if (! -d $out)
         {
-            `mkdir "$out"`
+            `mkdir "$out"`;
+        }
+        chdir($in);
+        print "\n\n";
+        &myprint ("IASL - Decompiling files to: $out \n");
+        
+        if (-f "SSDT-IdeTable.aml") # quick and dirty fix for gigabyte bios
+        {
+            &myprint ("Disassembling SSDT-IdeTable.aml");
+            move("SSDT-IdeTable.aml", "SSDT-IdeTable.bin");
+            `$IASL -p "$out/SSDT-IdeTable.dsl" -e DSDT.aml -d SSDT-IdeTable.bin`;
         }
         
-        chdir($in);
-        printf("\nDecompiling (iasl) Acpi tables to: %s \n\n", $out);
-        move("SSDT-IdeTable.aml", "SSDT-IdeTable.bin") && `$IASL -p "$out/SSDT-IdeTable.dsl" -d SSDT-IdeTable.bin`; # quick and dirty fix
+        if (-f "SSDT-PcieTbt.aml") # quick and dirty fix for iMac14.x
+        {
+            &myprint ("Disassembling SSDT-PcieTbt.aml");
+            move("SSDT-PcieTbt.aml", "SSDT-PcieTbt.bin");
+            `$IASL -p "$out/SSDT-PcieTbt.dsl" -e DSDT.aml -d SSDT-PcieTbt.bin`;
+        }        
+        
+        if (-f "SSDT-TbtPEG10.aml") # quick and dirty fix for iMac14.x
+        {
+            &myprint ("Disassembling SSDT-TbtPEG10.aml");
+            move("SSDT-TbtPEG10.aml", "SSDT-TbtPEG10.bin");
+            `$IASL -p "$out/SSDT-TbtPEG10.dsl" -e DSDT.aml -d SSDT-TbtPEG10.bin`;
+        }
+        
+        if (-f "SSDT-SDUsbLpt.aml") # quick and dirty fix for iMac14.x
+        {
+            &myprint ("Disassembling SSDT-SDUsbLpt.aml");
+            move("SSDT-SDUsbLpt.aml", "SSDT-SDUsbLpt.bin");
+            `$IASL -p "$out/SSDT-SDUsbLpt.dsl" -e DSDT.aml -d SSDT-SDUsbLpt.bin`;
+        }
+        
+        if (-f "SSDT-UsbLpt.aml") # quick and dirty fix for iMac14.x
+        {
+            &myprint ("Disassembling SSDT-UsbLpt.aml");
+            move("SSDT-UsbLpt.aml", "SSDT-UsbLpt.bin");
+            `$IASL -p "$out/SSDT-UsbLpt.dsl" -e DSDT.aml -d SSDT-UsbLpt.bin`;
+        }
+        
+        if (-f "SSDT-UsbMuxLp.aml") # quick and dirty fix for iMac14.x
+        {
+            &myprint ("Disassembling SSDT-UsbMuxLp.aml");
+            move("SSDT-UsbMuxLp.aml", "SSDT-UsbMuxLp.bin");
+            `$IASL -p "$out/SSDT-UsbMuxLp.dsl" -e DSDT.aml -d SSDT-UsbMuxLp.bin`;
+        }
+        
+        # file by file
         find(\&handle_file, $in);
     }
 
