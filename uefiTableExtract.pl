@@ -62,6 +62,38 @@ my $dslDir = "$pwd/DSL";
 my $enable_extract = 0;
 my $enable_decompile = 0;
 
+#
+# Theme
+#
+use Term::ANSIColor;
+# Screen size
+system("printf '\e[8;30;120t'");
+# Screen position
+system("printf '\e[3;0;0t'");
+# Clear screen
+system("clear");
+# Colors
+print color 'reset';
+print color 'white on_black';
+# Print
+sub myprint()
+{
+    my ($in) = @_;
+    print color 'bold bright_green on_black';
+    printf ("%s \n", $in);
+    print color 'reset';
+    print color 'white on_black';
+}
+# Error
+sub myerror()
+{
+    my ($in) = @_;
+    print color 'bold bright_red on_black';
+    printf ("%s \n", $in);
+    print color 'reset';
+    print color 'white on_black';
+}
+
 
 #
 # Tools
