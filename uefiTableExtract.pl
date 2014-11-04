@@ -40,6 +40,7 @@
 #			-       ...
 #			- v1.1  Fixed bug if tools not found in PATH
 #                       -       Changed default path for iasl and UEFIExtract
+#			- v1.2  Added fixes to decompile iMac14.x firmware
 #
 
 use strict;
@@ -100,7 +101,7 @@ sub extract()
     if ($enable_extract == 1)
     {
         printf("\nExtracting files to: %s.dump \n", $in);
-        `$UEFIExtract "$in"`
+        `$UEFIExtract "$in"`;
     }
 }
 
@@ -387,7 +388,7 @@ sub main()
 								{
 									if (! -d $amlDir)
 									{
-										`mkdir "$amlDir"`
+										`mkdir "$amlDir"`;
 									}
 
 									printf("Saving raw Acpi table data to: $amlDir/$targetFile\n");
