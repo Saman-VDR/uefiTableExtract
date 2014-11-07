@@ -142,10 +142,14 @@ sub tools()
 
     if (-x $IASL)
     {
-        if (`$IASL -h | grep "[f1,f2]"`)
-        {
-            $iaslVersion = 2013;
+        open (DIR, "$IASL -h |") || return 0;
+        while (<DIR>) {
+            if ($_ =~ /\[f1,f2\]/) {
+                $iaslVersion = 2013;
+            }
         }
+        close DIR;           # be done
+        
         open (DIR, "$IASL -v |") || return 0;
         while (<DIR>) {      # read command's output from the pipe
             if ($_ ne "\n") {
