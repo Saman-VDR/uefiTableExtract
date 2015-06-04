@@ -7,7 +7,7 @@ use warnings;
 # uefiTableExtract.pl is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-my $Version =  "Version 2.1 - Copyright (c) 2014 by uglyJoe";
+my $Version =  "Version 2.2 - Copyright (c) 2014-15 by uglyJoe";
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -46,6 +46,7 @@ my $Version =  "Version 2.1 - Copyright (c) 2014 by uglyJoe";
 #			 - v1.2  Added fixes to decompile iMac14.x firmware
 #            - v2.0  App Version
 #            - v2.1  Added test to found correct iasl command-line arguments 
+#            - v2.2  Added small fix for newer versions of UEFIExtract
 #
 
 use Cwd;
@@ -325,7 +326,7 @@ sub revo_file
 
     # The ACPI header is 36 bytes (skipping anything smaller).
     if ( ((-s $filename) > 36) && (substr($filename, 0, 7) ne "PADDING") && ($filename eq "body.bin")
-          && ((grep(/\sRaw\s/, $filepath)) || (grep(/\sPE32\W\s/, $filepath))) )
+          && ((grep(/\sRaw\s/, $filepath)) || (grep(/\sPE32\s/, $filepath))) )
     {
         if (open(FILE, $filename))
         {
