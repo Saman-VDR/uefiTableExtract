@@ -7,7 +7,7 @@ use warnings;
 # uefiTableExtract.pl is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-my $Version =  "Version 2.2 - Copyright (c) 2014-15 by uglyJoe";
+my $Version =  "Version 2.3 - Copyright (c) 2014-15 by uglyJoe";
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -47,6 +47,8 @@ my $Version =  "Version 2.2 - Copyright (c) 2014-15 by uglyJoe";
 #            - v2.0  App Version
 #            - v2.1  Added test to found correct iasl command-line arguments 
 #            - v2.2  Added small fix for newer versions of UEFIExtract
+#            - v2.3  Removed Terminal color settings
+#            -       Added fix to decompile more Apple firmwares
 #
 
 use Cwd;
@@ -81,37 +83,32 @@ system("printf '\e[8;30;120t'");
 system("printf '\e[3;0;0t'");
 # Clear screen
 system("clear");
-# Colors
-print color 'reset';
-print color 'white on_black';
+
 # Print
 sub myprint()
 {
     my ($in) = @_;
-    print color 'bold bright_green on_black';
+    print color 'bold';
     printf ("%s \n", $in);
     print color 'reset';
-    print color 'white on_black';
 }
 # Error
 sub myerror()
 {
     my ($in) = @_;
-    print color 'bold bright_red on_black';
+    print color 'bold bright_red';
     printf ("%s \n", $in);
     print color 'reset';
-    print color 'white on_black';
 }
 # Print header
 sub header()
 {
-    print color 'bold bright_green on_black';
+    print color 'bold';
     print "# \n";
     print "# Uefi Table Extract $Version \n";
     print "# \n";
     print "\n";
     print color 'reset';
-    print color 'white on_black';
 }
 
 #
@@ -263,6 +260,13 @@ sub aml2dsl()
                 &myprint ("Disassembling SSDT-UsbMuxLp.aml");
                 move("SSDT-UsbMuxLp.aml", "SSDT-UsbMuxLp.bin");
                 `$IASL -p "$out/SSDT-UsbMuxLp.dsl" -e DSDT.aml -d SSDT-UsbMuxLp.bin`;
+            }
+            
+            if (-f "SSDT-SataSec.aml") # quick and dirty fix for MB5.x
+            {
+                &myprint ("Disassembling SSDT-SataSec.aml");
+                move("SSDT-SataSec.aml", "SSDT-SataSec.bin");
+                `$IASL -p "$out/SSDT-SataSec.dsl" -e DSDT.aml -d SSDT-SataSec.bin`;
             }
         }
         
@@ -514,9 +518,6 @@ sub main()
         &myprint ("Press [ Return <-' ]");
         &myprint (" ");
 
-        print color 'reset';
-        print color 'bold bright_white on_black';
-        
         $rom = <>;
         chomp $rom;
         $rom =~ s/^\s+|\\|\s+$//g;
