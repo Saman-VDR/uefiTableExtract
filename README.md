@@ -1,7 +1,7 @@
 UefiTableExtract
 ================
 
-Version 2.2 - Copyright (c) 2014-2015 by uglyJoe
+Version 2.4 - Copyright (c) 2014-2015 by uglyJoe
 
 A OS X application to extract DSDT and SSDT tables from UEFI-Bios files.
 
