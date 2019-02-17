@@ -1,10 +1,18 @@
 #!/bin/bash
 
-# Download MaciASL/iasl5 and UEFIExtract
+# Download MaciASL/iasl62 and UEFIExtract NE
 # Copy iasl and UEFIExtract to the App
 # Copy UefiTableExtract.app to Applications folder
 
-cd "$(dirname  $0)"
+IASL_VERSION=iasl62
+IASL_URL=https://github.com/acidanthera/MaciASL/raw/master/Dist/${IASL_VERSION}
+
+UEFIEXTRACT_VERSION=UEFIExtract_NE_A55_mac
+UEFIEXTRACT_URL=https://github.com/LongSoft/UEFITool/releases/download/A55/${UEFIEXTRACT_VERSION}.zip
+
+
+directory=$(dirname  "$0")
+cd "$directory"
 
 echo "Searching tools..."
 TOOL=$(which iasl)
@@ -16,16 +24,16 @@ else
    echo "iasl not found!"
    while true
    do
-      read -p "Download and install iasl now? (y/n): " choice
+      read -p "Download and install $IASL_VERSION now? (y/n): " choice
       case "$choice" in
- 	  [yY]* ) { 
- 	             curl -L -O https://bitbucket.org/RehabMan/os-x-maciasl-patchmatic/downloads/RehabMan-MaciASL-2015-0107.zip
-                 unzip RehabMan-MaciASL-2015-0107.zip -d RehabMan-MaciASL-2015-0107
-                 cp ./RehabMan-MaciASL-2015-0107/MaciASL.app/Contents/MacOS/iasl5 ./UefiTableExtract.app/Contents/MacOS/iasl
+ 	     [yY]* ) { 
+                 curl -L -O $IASL_URL
+                 mv ./${IASL_VERSION} ./UefiTableExtract.app/Contents/MacOS/iasl
+                 chmod +x ./UefiTableExtract.app/Contents/MacOS/iasl
               }
              break;;
- 	  [nN]* ) break;;
- 	   * ) echo "Try again...";;
+ 	     [nN]* ) break;;
+ 	     * ) echo "Try again...";;
       esac
    done
    
@@ -48,16 +56,19 @@ else
    echo "UEFIExtract not found!"
    while true
    do
-      read -p "Download and install UEFIExtract now? (y/n): " choice
+      read -p "Download and install $UEFIEXTRACT_VERSION now? (y/n): " choice
       case "$choice" in
- 	  [yY]* ) { 
- 	             curl -L -O https://github.com/LongSoft/UEFITool/releases/download/0.20.5/UEFIExtract_0.10.1_osx.zip
-                 unzip UEFIExtract_0.10.1_osx.zip -d UEFIExtract_0.10.1
-                 cp ./UEFIExtract_0.10.1/UEFIExtract ./UefiTableExtract.app/Contents/MacOS/UEFIExtract
+ 	     [yY]* ) { 
+                 curl -L -O $UEFIEXTRACT_URL
+                 unzip ./${UEFIEXTRACT_VERSION}.zip -d ./${UEFIEXTRACT_VERSION}
+                 cp ./${UEFIEXTRACT_VERSION}/UEFIExtract ./UefiTableExtract.app/Contents/MacOS/UEFIExtract
+                 chmod +x ./UefiTableExtract.app/Contents/MacOS/UEFIExtract
+                 rm ./${UEFIEXTRACT_VERSION}.zip
+                 rm -R ./${UEFIEXTRACT_VERSION}
               }
              break;;
- 	  [nN]* ) break;;
- 	   * ) echo "Try again...";;
+ 	     [nN]* ) break;;
+ 	     * ) echo "Try again...";;
       esac
    done
    
@@ -72,7 +83,43 @@ else
 fi 
 
 echo ""
-echo "Copy UefiTableExtract to Applications"
+installed=FALSE
+while true
+do
+   read -p "Copy UefiTableExtract to Applications? (y/n): " choice
+   case "$choice" in
+      [yY]* ) { 
+         cp -rf ./UefiTableExtract.app /Applications
+         installed=TRUE
+      }
+      break;;
+      [nN]* ) break;;
+      * ) echo "Try again...";;
+   esac
+done
+
+if [ "$installed" == "TRUE" ]; then
+   while true
+   do
+      echo ""
+      read -p "Delete $directory ? (y/n): " choice
+      case "$choice" in
+         [yY]* ) { 
+            cd ../
+            rm -R "$directory"
+         }
+         break;;
+         [nN]* ) break;;
+         * ) echo "Try again...";;
+      esac
+    done
+fi
+
+
 echo ""
-cp -rf ./UefiTableExtract.app /Applications
 echo "All done..."
+
+# Game Over
+#tput clear
+osascript -e 'quit app "Terminal"'
+
