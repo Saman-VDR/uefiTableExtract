@@ -7,7 +7,7 @@ use warnings;
 # uefiTableExtract.pl is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-my $Version =  "Version 2.3 - Copyright (c) 2014-15 by uglyJoe";
+my $Version =  "Version 2.4 \n\# Copyright (c) 2014-19 by uglyJoe";
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -49,6 +49,8 @@ my $Version =  "Version 2.3 - Copyright (c) 2014-15 by uglyJoe";
 #            - v2.2  Added small fix for newer versions of UEFIExtract
 #            - v2.3  Removed Terminal color settings
 #            -       Added fix to decompile more Apple firmwares
+#            - v2.4  Update install.command with iasl62 and UEFIExtract NE alpha 55
+#            -       Added support for UEFIExtract NE
 #
 
 use Cwd;
@@ -72,6 +74,7 @@ my $skippedPaddingFiles = 0;
 my $rom = "";
 my $dump = $pwd;
 my $iaslVersion = 2014;
+my $uefiExtractNE = 0;
 
 #
 # Theme
@@ -151,7 +154,7 @@ sub tools()
         open (DIR, "$IASL -v |") || return 0;
         while (<DIR>) {      # read command's output from the pipe
             if ($_ ne "\n") {
-                print $_;    # do something with what we read back from the proces
+                print $_;    # do something with what we read back from the process
             }
         }
         close DIR;           # be done
@@ -176,7 +179,11 @@ sub tools()
         open (DIR, "$UEFIExtract | grep UEFIExtract |") || return 0;
         while (<DIR>) {      # read command's output from the pipe
             if ($_ ne "\n") {
-                print $_;    # do something with what we read back from the proces
+            	if ($_ =~ / NE /) {
+            	    $uefiExtractNE = 1;
+            	}
+                print $_;    # do something with what we read back from the process
+                last;        # we need only the first line
             }
         }
         close DIR;           # be done
@@ -199,7 +206,12 @@ sub extract()
     }
     print "\n";
     &myprint ("UEFIExtract - Extracting files to: $in.dump");
-    `$UEFIExtract "$in"`;
+    if ($uefiExtractNE == 1) {
+        `$UEFIExtract "$in" all`;
+    }
+    else {
+        `$UEFIExtract "$in"`;
+    }
 }
 
 #
