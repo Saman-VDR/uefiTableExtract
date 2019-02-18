@@ -7,6 +7,6 @@ mac OS application to extract and decompile DSDT and SSDT tables from UEFI-Firmw
 
 The App is based on acpiTableExtract.pl by Pike R. Alpha
 
-To run this App, you need UEFIExtract and iasl installed in PATH or to UefiTableExtract.app/Contents/MacOS
+To run this App, you need UEFIExtract and iasl installed in PATH or inside UefiTableExtract.app/Contents/MacOS
 
 You can let the install.command do this for you.
