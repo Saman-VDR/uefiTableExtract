@@ -7,7 +7,7 @@ use warnings;
 # uefiTableExtract.pl is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-my $Version =  "Version 2.4 \n\# Copyright (c) 2014-19 by uglyJoe";
+my $Version =  "Version 2.5 \n\# Copyright (c) 2014-19 by uglyJoe";
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -51,6 +51,7 @@ my $Version =  "Version 2.4 \n\# Copyright (c) 2014-19 by uglyJoe";
 #            -       Added fix to decompile more Apple firmwares
 #            - v2.4  Update install.command with iasl62 and UEFIExtract NE alpha 55
 #            -       Added support for UEFIExtract NE
+#            - v2.5  More fixes for recent apple firmwares
 #
 
 use Cwd;
@@ -280,8 +281,43 @@ sub aml2dsl()
                 move("SSDT-SataSec.aml", "SSDT-SataSec.bin");
                 `$IASL -p "$out/SSDT-SataSec.dsl" -e DSDT.aml -d SSDT-SataSec.bin`;
             }
+            
+            if (-f "SSDT-TbtPEG01.aml") # quick and dirty fix for MBP14.x
+            {
+                &myprint ("Disassembling SSDT-TbtPEG01.aml");
+                move("SSDT-TbtPEG01.aml", "SSDT-TbtPEG01.bin");
+                `$IASL -p "$out/SSDT-TbtPEG01.dsl" -e DSDT.aml -d SSDT-TbtPEG01.bin`;
+            }
+            
+            if (-f "SSDT-TbtPEG11.aml") # quick and dirty fix for MBA7.x
+            {
+                &myprint ("Disassembling SSDT-TbtPEG11.aml");
+                move("SSDT-TbtPEG11.aml", "SSDT-TbtPEG11.bin");
+                `$IASL -p "$out/SSDT-TbtPEG11.dsl" -e DSDT.aml -d SSDT-TbtPEG11.bin`;
+            }
+            
+            if (-f "SSDT-TbtPEG12.aml") # quick and dirty fix for MBP14.x
+            {
+                &myprint ("Disassembling SSDT-TbtPEG12.aml");
+                move("SSDT-TbtPEG12.aml", "SSDT-TbtPEG12.bin");
+                `$IASL -p "$out/SSDT-TbtPEG12.dsl" -e DSDT.aml -d SSDT-TbtPEG12.bin`;
+            }
+
+            if (-f "SSDT-TbtOnPCH.aml") # quick and dirty fix for IM18.x
+            {
+                &myprint ("Disassembling SSDT-TbtOnPCH.aml");
+                move("SSDT-TbtOnPCH.aml", "SSDT-TbtOnPCH.bin");
+                `$IASL -p "$out/SSDT-TbtOnPCH.dsl" -e DSDT.aml -d SSDT-TbtOnPCH.bin`;
+            }
+            
+            if (-f "SSDT-UsbMux.aml") # quick and dirty fix for MBA7.x
+            {
+                &myprint ("Disassembling SSDT-UsbMux.aml");
+                move("SSDT-UsbMux.aml", "SSDT-UsbMux.bin");
+                `$IASL -p "$out/SSDT-UsbMux.dsl" -e DSDT.aml -d SSDT-UsbMux.bin`;
+            }
         }
-        
+
         # file by file
         find(\&handle_file, $in);
     }
