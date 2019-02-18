@@ -7,7 +7,7 @@ use warnings;
 # uefiTableExtract.pl is a Perl script to extract DSDT and SSDT tables from UEFI-Bios.
 #
 #
-my $Version =  "Version 2.5 \n\# Copyright (c) 2014-19 by uglyJoe";
+my $Version =  "Version 2.6 \n\# Copyright (c) 2014-19 by uglyJoe";
 #               based on:
 #               acpiTableExtract.pl v.1.2 - Copyright (c) 2013-2014 by Pike R. Alpha
 #
@@ -52,6 +52,7 @@ my $Version =  "Version 2.5 \n\# Copyright (c) 2014-19 by uglyJoe";
 #            - v2.4  Update install.command with iasl62 and UEFIExtract NE alpha 55
 #            -       Added support for UEFIExtract NE
 #            - v2.5  More fixes for recent apple firmwares
+#            - v2.6  Make fixing namespace errors more comfortable  
 #
 
 use Cwd;
@@ -76,6 +77,7 @@ my $rom = "";
 my $dump = $pwd;
 my $iaslVersion = 2014;
 my $uefiExtractNE = 0;
+my $useSsdtFixes = 1;
 
 #
 # Theme
@@ -231,118 +233,86 @@ sub aml2dsl()
         print "\n\n";
         &myprint ("IASL - Decompiling files to: $out \n");
         
-        if ($iaslVersion > 2013)
+        if ($useSsdtFixes == 1)
         {
             if (-f "SSDT-IdeTable.aml") # quick and dirty fix for gigabyte bios
             {
-                &myprint ("Disassembling SSDT-IdeTable.aml");
                 move("SSDT-IdeTable.aml", "SSDT-IdeTable.bin");
-                `$IASL -p "$out/SSDT-IdeTable.dsl" -e DSDT.aml -d SSDT-IdeTable.bin`;
             }
         
             if (-f "SSDT-PcieTbt.aml") # quick and dirty fix for iMac14.x
             {
-                &myprint ("Disassembling SSDT-PcieTbt.aml");
                 move("SSDT-PcieTbt.aml", "SSDT-PcieTbt.bin");
-                `$IASL -p "$out/SSDT-PcieTbt.dsl" -e DSDT.aml -d SSDT-PcieTbt.bin`;
             }
         
             if (-f "SSDT-SDUsbLpt.aml") # quick and dirty fix for iMac14.x
             {
-                &myprint ("Disassembling SSDT-SDUsbLpt.aml");
                 move("SSDT-SDUsbLpt.aml", "SSDT-SDUsbLpt.bin");
-                `$IASL -p "$out/SSDT-SDUsbLpt.dsl" -e DSDT.aml -d SSDT-SDUsbLpt.bin`;
             }
         
             if (-f "SSDT-UsbLpt.aml") # quick and dirty fix for iMac14.x
             {
-                &myprint ("Disassembling SSDT-UsbLpt.aml");
                 move("SSDT-UsbLpt.aml", "SSDT-UsbLpt.bin");
-                `$IASL -p "$out/SSDT-UsbLpt.dsl" -e DSDT.aml -d SSDT-UsbLpt.bin`;
             }
         
             if (-f "SSDT-UsbMuxLp.aml") # quick and dirty fix for iMac14.x
             {
-                &myprint ("Disassembling SSDT-UsbMuxLp.aml");
                 move("SSDT-UsbMuxLp.aml", "SSDT-UsbMuxLp.bin");
-                `$IASL -p "$out/SSDT-UsbMuxLp.dsl" -e DSDT.aml -d SSDT-UsbMuxLp.bin`;
             }
             
             if (-f "SSDT-SataSec.aml") # quick and dirty fix for MB5.x
             {
-                &myprint ("Disassembling SSDT-SataSec.aml");
                 move("SSDT-SataSec.aml", "SSDT-SataSec.bin");
-                `$IASL -p "$out/SSDT-SataSec.dsl" -e DSDT.aml -d SSDT-SataSec.bin`;
             }
             
             if (-f "SSDT-TbtPEG01.aml") # quick and dirty fix for MBP14.x
             {
-                &myprint ("Disassembling SSDT-TbtPEG01.aml");
                 move("SSDT-TbtPEG01.aml", "SSDT-TbtPEG01.bin");
-                `$IASL -p "$out/SSDT-TbtPEG01.dsl" -e DSDT.aml -d SSDT-TbtPEG01.bin`;
             }
         
             if (-f "SSDT-TbtPEG10.aml") # quick and dirty fix for iMac14.x
             {
-                &myprint ("Disassembling SSDT-TbtPEG10.aml");
                 move("SSDT-TbtPEG10.aml", "SSDT-TbtPEG10.bin");
-                `$IASL -p "$out/SSDT-TbtPEG10.dsl" -e DSDT.aml -d SSDT-TbtPEG10.bin`;
             }
             
             if (-f "SSDT-TbtPEG11.aml") # quick and dirty fix for MBA7.x
             {
-                &myprint ("Disassembling SSDT-TbtPEG11.aml");
                 move("SSDT-TbtPEG11.aml", "SSDT-TbtPEG11.bin");
-                `$IASL -p "$out/SSDT-TbtPEG11.dsl" -e DSDT.aml -d SSDT-TbtPEG11.bin`;
             }
             
             if (-f "SSDT-TbtPEG12.aml") # quick and dirty fix for MBP14.x
             {
-                &myprint ("Disassembling SSDT-TbtPEG12.aml");
                 move("SSDT-TbtPEG12.aml", "SSDT-TbtPEG12.bin");
-                `$IASL -p "$out/SSDT-TbtPEG12.dsl" -e DSDT.aml -d SSDT-TbtPEG12.bin`;
             }
 
             if (-f "SSDT-TbtOnPCH.aml") # quick and dirty fix for IM18.x
             {
-                &myprint ("Disassembling SSDT-TbtOnPCH.aml");
                 move("SSDT-TbtOnPCH.aml", "SSDT-TbtOnPCH.bin");
-                `$IASL -p "$out/SSDT-TbtOnPCH.dsl" -e DSDT.aml -d SSDT-TbtOnPCH.bin`;
             }
             
             if (-f "SSDT-UsbMux.aml") # quick and dirty fix for MBA7.x
             {
-                &myprint ("Disassembling SSDT-UsbMux.aml");
                 move("SSDT-UsbMux.aml", "SSDT-UsbMux.bin");
-                `$IASL -p "$out/SSDT-UsbMux.dsl" -e DSDT.aml -d SSDT-UsbMux.bin`;
             }
             
             if (-f "SSDT-UsbNoRmh.aml") # quick and dirty fix for MM6.x
             {
-                &myprint ("Disassembling SSDT-UsbNoRmh.aml");
                 move("SSDT-UsbNoRmh.aml", "SSDT-UsbNoRmh.bin");
-                `$IASL -p "$out/SSDT-UsbNoRmh.dsl" -e DSDT.aml -d SSDT-UsbNoRmh.bin`;
             }
             
             if (-f "SSDT-UsbRmh.aml") # quick and dirty fix for MM6.x
             {
-                &myprint ("Disassembling SSDT-UsbRmh.aml");
                 move("SSDT-UsbRmh.aml", "SSDT-UsbRmh.bin");
-                `$IASL -p "$out/SSDT-UsbRmh.dsl" -e DSDT.aml -d SSDT-UsbRmh.bin`;
             }
             
             if (-f "SSDT-UsbPpt.aml") # quick and dirty fix for MM6.x
             {
-                &myprint ("Disassembling SSDT-UsbPpt.aml");
                 move("SSDT-UsbPpt.aml", "SSDT-UsbPpt.bin");
-                `$IASL -p "$out/SSDT-UsbPpt.dsl" -e DSDT.aml -d SSDT-UsbPpt.bin`;
             }
             
             if (-f "SSDT-IGNoHda.aml") # quick and dirty fix for MM6.x
             {
-                &myprint ("Disassembling SSDT-IGNoHda.aml");
                 move("SSDT-IGNoHda.aml", "SSDT-IGNoHda.bin");
-                `$IASL -p "$out/SSDT-IGNoHda.dsl" -e DSDT.aml -d SSDT-IGNoHda.bin`;
             }
         }
         
@@ -367,6 +337,27 @@ sub aml2dsl()
                 else
                 {
                     `$IASL -p "$out/$targetFile" -e DSDT.aml SSDT*.aml -d "$targetFile"`;
+                }
+            }
+            else
+            {
+                print "\n";
+                &myprint ("Skipping $targetFile");
+            }
+        }
+        elsif ($ext && "$ext" eq ".bin") # file needs private namespace
+        {
+            if ($targetFile =~ /SSDT/)
+            {
+                print "\n";
+                &myprint ("Disassembling $targetFile");
+                if ($iaslVersion == 2013)
+                {
+                    `$IASL -p "$out/$targetFile" -d "$targetFile" -e DSDT.aml`;
+                }
+                else
+                {
+                    `$IASL -p "$out/$targetFile" -e DSDT.aml -d "$targetFile"`;
                 }
             }
             else
