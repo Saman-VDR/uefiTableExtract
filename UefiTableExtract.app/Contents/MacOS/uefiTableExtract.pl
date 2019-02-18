@@ -247,13 +247,6 @@ sub aml2dsl()
                 `$IASL -p "$out/SSDT-PcieTbt.dsl" -e DSDT.aml -d SSDT-PcieTbt.bin`;
             }
         
-            if (-f "SSDT-TbtPEG10.aml") # quick and dirty fix for iMac14.x
-            {
-                &myprint ("Disassembling SSDT-TbtPEG10.aml");
-                move("SSDT-TbtPEG10.aml", "SSDT-TbtPEG10.bin");
-                `$IASL -p "$out/SSDT-TbtPEG10.dsl" -e DSDT.aml -d SSDT-TbtPEG10.bin`;
-            }
-        
             if (-f "SSDT-SDUsbLpt.aml") # quick and dirty fix for iMac14.x
             {
                 &myprint ("Disassembling SSDT-SDUsbLpt.aml");
@@ -288,6 +281,13 @@ sub aml2dsl()
                 move("SSDT-TbtPEG01.aml", "SSDT-TbtPEG01.bin");
                 `$IASL -p "$out/SSDT-TbtPEG01.dsl" -e DSDT.aml -d SSDT-TbtPEG01.bin`;
             }
+        
+            if (-f "SSDT-TbtPEG10.aml") # quick and dirty fix for iMac14.x
+            {
+                &myprint ("Disassembling SSDT-TbtPEG10.aml");
+                move("SSDT-TbtPEG10.aml", "SSDT-TbtPEG10.bin");
+                `$IASL -p "$out/SSDT-TbtPEG10.dsl" -e DSDT.aml -d SSDT-TbtPEG10.bin`;
+            }
             
             if (-f "SSDT-TbtPEG11.aml") # quick and dirty fix for MBA7.x
             {
@@ -316,8 +316,36 @@ sub aml2dsl()
                 move("SSDT-UsbMux.aml", "SSDT-UsbMux.bin");
                 `$IASL -p "$out/SSDT-UsbMux.dsl" -e DSDT.aml -d SSDT-UsbMux.bin`;
             }
+            
+            if (-f "SSDT-UsbNoRmh.aml") # quick and dirty fix for MM6.x
+            {
+                &myprint ("Disassembling SSDT-UsbNoRmh.aml");
+                move("SSDT-UsbNoRmh.aml", "SSDT-UsbNoRmh.bin");
+                `$IASL -p "$out/SSDT-UsbNoRmh.dsl" -e DSDT.aml -d SSDT-UsbNoRmh.bin`;
+            }
+            
+            if (-f "SSDT-UsbRmh.aml") # quick and dirty fix for MM6.x
+            {
+                &myprint ("Disassembling SSDT-UsbRmh.aml");
+                move("SSDT-UsbRmh.aml", "SSDT-UsbRmh.bin");
+                `$IASL -p "$out/SSDT-UsbRmh.dsl" -e DSDT.aml -d SSDT-UsbRmh.bin`;
+            }
+            
+            if (-f "SSDT-UsbPpt.aml") # quick and dirty fix for MM6.x
+            {
+                &myprint ("Disassembling SSDT-UsbPpt.aml");
+                move("SSDT-UsbPpt.aml", "SSDT-UsbPpt.bin");
+                `$IASL -p "$out/SSDT-UsbPpt.dsl" -e DSDT.aml -d SSDT-UsbPpt.bin`;
+            }
+            
+            if (-f "SSDT-IGNoHda.aml") # quick and dirty fix for MM6.x
+            {
+                &myprint ("Disassembling SSDT-IGNoHda.aml");
+                move("SSDT-IGNoHda.aml", "SSDT-IGNoHda.bin");
+                `$IASL -p "$out/SSDT-IGNoHda.dsl" -e DSDT.aml -d SSDT-IGNoHda.bin`;
+            }
         }
-
+        
         # file by file
         find(\&handle_file, $in);
     }
@@ -340,7 +368,6 @@ sub aml2dsl()
                 {
                     `$IASL -p "$out/$targetFile" -e DSDT.aml SSDT*.aml -d "$targetFile"`;
                 }
-                
             }
             else
             {
@@ -449,12 +476,12 @@ sub revo_file
                     $signature eq "PCCT" )  # Platform Communications Channel Table.
                 {
                     read(FILE, $length, 4);
-                    read(FILE, $revision, 1);    # Revision (unused)
-                    read(FILE, $checksum, 1);    # Checksum (unused)
-                    read(FILE, $id, 6);            # OEMID
-                    read(FILE, $tid, 8);        # OEM Table ID
-                    read(FILE, $crev, 4);        # OEM Revision (unused)
-                    read(FILE, $cid, 4);        # Creator ID (unused)
+                    read(FILE, $revision, 1); # Revision (unused)
+                    read(FILE, $checksum, 1); # Checksum (unused)
+                    read(FILE, $id, 6);       # OEMID
+                    read(FILE, $tid, 8);      # OEM Table ID
+                    read(FILE, $crev, 4);     # OEM Revision (unused)
+                    read(FILE, $cid, 4);      # Creator ID (unused)
 
                     if ($cid eq "AAPL" || $cid eq "INTL" || $id eq "      ")
                     {
