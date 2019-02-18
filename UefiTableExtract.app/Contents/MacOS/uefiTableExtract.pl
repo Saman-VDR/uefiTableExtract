@@ -53,6 +53,8 @@ my $Version =  "Version 2.6 \n\# Copyright (c) 2014-19 by uglyJoe";
 #            -       Added support for UEFIExtract NE
 #            - v2.5  More fixes for recent apple firmwares
 #            - v2.6  Make fixing namespace errors more comfortable  
+#            - v2.7  Fixing namespace errors more general  
+#                    This should help decompiling firmwares by apple and gigabyte
 #
 
 use Cwd;
@@ -249,81 +251,72 @@ sub aml2dsl()
             {
                 move("SSDT-SDUsbLpt.aml", "SSDT-SDUsbLpt.bin");
             }
-        
-            if (-f "SSDT-UsbLpt.aml") # quick and dirty fix for iMac14.x
-            {
-                move("SSDT-UsbLpt.aml", "SSDT-UsbLpt.bin");
-            }
-        
-            if (-f "SSDT-UsbMuxLp.aml") # quick and dirty fix for iMac14.x
-            {
-                move("SSDT-UsbMuxLp.aml", "SSDT-UsbMuxLp.bin");
-            }
             
             if (-f "SSDT-SataSec.aml") # quick and dirty fix for MB5.x
             {
                 move("SSDT-SataSec.aml", "SSDT-SataSec.bin");
             }
             
-            if (-f "SSDT-TbtPEG01.aml") # quick and dirty fix for MBP14.x
-            {
-                move("SSDT-TbtPEG01.aml", "SSDT-TbtPEG01.bin");
-            }
-        
-            if (-f "SSDT-TbtPEG10.aml") # quick and dirty fix for iMac14.x
-            {
-                move("SSDT-TbtPEG10.aml", "SSDT-TbtPEG10.bin");
-            }
-            
-            if (-f "SSDT-TbtPEG11.aml") # quick and dirty fix for MBA7.x
-            {
-                move("SSDT-TbtPEG11.aml", "SSDT-TbtPEG11.bin");
-            }
-            
-            if (-f "SSDT-TbtPEG12.aml") # quick and dirty fix for MBP14.x
-            {
-                move("SSDT-TbtPEG12.aml", "SSDT-TbtPEG12.bin");
-            }
-
             if (-f "SSDT-TbtOnPCH.aml") # quick and dirty fix for IM18.x
             {
                 move("SSDT-TbtOnPCH.aml", "SSDT-TbtOnPCH.bin");
-            }
-            
-            if (-f "SSDT-UsbMux.aml") # quick and dirty fix for MBA7.x
-            {
-                move("SSDT-UsbMux.aml", "SSDT-UsbMux.bin");
-            }
-            
-            if (-f "SSDT-UsbNoRmh.aml") # quick and dirty fix for MM6.x
-            {
-                move("SSDT-UsbNoRmh.aml", "SSDT-UsbNoRmh.bin");
-            }
-            
-            if (-f "SSDT-UsbRmh.aml") # quick and dirty fix for MM6.x
-            {
-                move("SSDT-UsbRmh.aml", "SSDT-UsbRmh.bin");
-            }
-            
-            if (-f "SSDT-UsbPpt.aml") # quick and dirty fix for MM6.x
-            {
-                move("SSDT-UsbPpt.aml", "SSDT-UsbPpt.bin");
             }
             
             if (-f "SSDT-IGNoHda.aml") # quick and dirty fix for MM6.x
             {
                 move("SSDT-IGNoHda.aml", "SSDT-IGNoHda.bin");
             }
+            
+            if (-f "SSDT-PegSsdt.aml") # quick and dirty fix for newer gb boards like Z390
+            {
+                move("SSDT-PegSsdt.aml", "SSDT-PegSsdt.bin");
+            }
+            
+            # do your best and find the rest...
+            find(\&file2fix, $in);
         }
+
         
         # file by file
         find(\&handle_file, $in);
+    }
+    
+    sub file2fix
+    {
+        my $targetFile = $_;
+        my ($ext) = $targetFile =~ /(\.[^.]+)$/;
+        
+        if ($ext && "$ext" eq ".aml" && $targetFile =~ /SSDT/)
+        {
+            $targetFile =~ s/\.[^.]+$//;
+            if ($targetFile =~ /SSDT-TbtPEG/) # apple
+            {
+                &myprint ("Moving $targetFile");
+                move($targetFile . ".aml", $targetFile . ".bin");
+            }
+            elsif ($targetFile =~ /SSDT-Usb/) # apple
+            {
+                &myprint ("Moving $targetFile");
+                move($targetFile . ".aml", $targetFile . ".bin");
+            }
+            elsif ($targetFile =~ /_/) # gigabyte
+            {
+                &myprint ("Moving $targetFile");
+                move($targetFile . ".aml", $targetFile . ".bin");
+            }
+            elsif ($targetFile =~ /SSDT-RV/) # gigabyte
+            {
+                &myprint ("Moving $targetFile");
+                move($targetFile . ".aml", $targetFile . ".bin");
+            }
+        }
     }
 
     sub handle_file
     {
         my $targetFile = $_;
         my ($ext) = $targetFile =~ /(\.[^.]+)$/;
+
         if ($ext && "$ext" eq ".aml")
         {
             if ($targetFile =~ /SSDT/ || $targetFile =~ /DSDT/)
