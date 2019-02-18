@@ -9,4 +9,4 @@ The App is based on acpiTableExtract.pl by Pike R. Alpha
 
 To run this App, you need UEFIExtract and iasl installed in PATH or to UefiTableExtract.app/Contents/MacOS
 
-You can use the install.command to do this for you.
+You can let the install.command do this for you.
