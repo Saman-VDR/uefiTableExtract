@@ -235,41 +235,52 @@ sub aml2dsl()
         print "\n\n";
         &myprint ("IASL - Decompiling files to: $out \n");
         
+        # quick and dirty fixes
         if ($useSsdtFixes == 1)
         {
-            if (-f "SSDT-IdeTable.aml") # quick and dirty fix for gigabyte bios
+            if (-f "SSDT-IdeTable.aml") # gigabyte and others
             {
                 move("SSDT-IdeTable.aml", "SSDT-IdeTable.bin");
             }
         
-            if (-f "SSDT-PcieTbt.aml") # quick and dirty fix for iMac14.x
+            if (-f "SSDT-PcieTbt.aml") # iMac14.x
             {
                 move("SSDT-PcieTbt.aml", "SSDT-PcieTbt.bin");
             }
         
-            if (-f "SSDT-SDUsbLpt.aml") # quick and dirty fix for iMac14.x
+            if (-f "SSDT-SDUsbLpt.aml") # iMac14.x
             {
                 move("SSDT-SDUsbLpt.aml", "SSDT-SDUsbLpt.bin");
             }
             
-            if (-f "SSDT-SataSec.aml") # quick and dirty fix for MB5.x
+            if (-f "SSDT-SataSec.aml") # MB5.x
             {
                 move("SSDT-SataSec.aml", "SSDT-SataSec.bin");
             }
             
-            if (-f "SSDT-TbtOnPCH.aml") # quick and dirty fix for IM18.x
+            if (-f "SSDT-TbtOnPCH.aml") # IM18.x
             {
                 move("SSDT-TbtOnPCH.aml", "SSDT-TbtOnPCH.bin");
             }
             
-            if (-f "SSDT-IGNoHda.aml") # quick and dirty fix for MM6.x
+            if (-f "SSDT-IGNoHda.aml") # MM6.x
             {
                 move("SSDT-IGNoHda.aml", "SSDT-IGNoHda.bin");
             }
             
-            if (-f "SSDT-PegSsdt.aml") # quick and dirty fix for newer gb boards like Z390
+            if (-f "SSDT-PegSsdt.aml") # newer gb boards like Z390
             {
                 move("SSDT-PegSsdt.aml", "SSDT-PegSsdt.bin");
+            }
+
+            if (-f "SSDT-AmdTabl.aml") # zotac zbox-nano
+            {
+                move("SSDT-AmdTabl.aml", "SSDT-AmdTabl.bin");
+            }
+            
+            if (-f "SSDT-NvdTabl.aml") # zotac zbox-nano
+            {
+                move("SSDT-NvdTabl.aml", "SSDT-NvdTabl.bin");
             }
             
             # do your best and find the rest...
